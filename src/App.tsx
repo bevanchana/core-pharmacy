@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Phone, MessageCircle, ShieldCheck, Clock } from 'lucide-react';
+import { Search, MapPin, Phone, MessageCircle, ShieldCheck, Clock, Activity } from 'lucide-react';
 import './App.css'
 
 const mockDatabase = [
@@ -29,121 +29,150 @@ export default function App() {
     med.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Color psychology palette for stock badges
   const getBadgeStyle = (stockStatus: string) => {
     switch (stockStatus) {
-      case 'In Stock': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'Low Stock': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'Out of Stock': return 'bg-rose-50 text-rose-700 border-rose-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'In Stock': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'Low Stock': return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'Out of Stock': return 'bg-rose-100 text-rose-800 border-rose-200';
+      default: return 'bg-slate-100 text-slate-800 border-slate-200';
     }
   };
 
   const handleWhatsAppReserve = (medName: string) => {
-    const phone = "237XXXXXXXXX"; // Replace with actual number
+    const phone = "237XXXXXXXXX";
     const message = encodeURIComponent(`Hello Core Pharmacy, I would like to check the availability of ${medName}.`);
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 selection:text-blue-900">
-      {/* Top Utility Bar - Clean White/Neutral */}
-      <div className="bg-white border-b border-slate-200 text-slate-500 text-xs md:text-sm py-2 px-4 hidden md:block">
+    <div className="min-h-screen bg-[#f8fafc] font-sans text-slate-800 selection:bg-emerald-200 selection:text-emerald-900">
+      {/* Top Utility Bar */}
+      <div className="bg-white border-b border-slate-100 text-slate-500 text-xs md:text-sm py-2 px-4 hidden md:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
-              <MapPin className="h-4 w-4 mr-1 text-blue-600" /> Likomba, South-West | Near PCC & Redeemed House
+              <MapPin className="h-4 w-4 mr-1 text-blue-500" /> Likomba, South-West | Near PCC & Redeemed House
             </span>
             <span className="flex items-center">
-              <Clock className="h-4 w-4 mr-1 text-blue-600" /> Open Mon-Sat: 8AM - 8PM
+              <Clock className="h-4 w-4 mr-1 text-blue-500" /> Open Mon-Sat: 8AM - 8PM
             </span>
           </div>
-          <div className="flex items-center">
-            <ShieldCheck className="h-4 w-4 mr-1 text-emerald-600" /> Licensed & Verified Pharmacy
+          <div className="flex items-center font-medium">
+            <ShieldCheck className="h-4 w-4 mr-1 text-emerald-500" /> Licensed & Verified Pharmacy
           </div>
         </div>
       </div>
 
-      {/* Main Navigation - Professional Blue */}
-      <header className="bg-blue-700 text-white shadow-md sticky top-0 z-50">
+      {/* Main Navigation with soft shadow */}
+      <header className="bg-white sticky top-0 z-50 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)]">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="bg-white p-2 rounded-lg">
-              <span className="text-blue-700 font-bold text-xl leading-none block">CORE</span>
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-2.5 rounded-xl shadow-md">
+              <Activity className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold tracking-tight">Core Pharmacy</h1>
-              <p className="text-blue-200 text-xs md:hidden mt-1">📍 Likomba | Near PCC</p>
+              <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Core Pharmacy</h1>
+              <p className="text-slate-500 text-xs md:hidden mt-0.5">📍 Likomba | Near PCC</p>
             </div>
           </div>
 
-          <button className="hidden md:flex items-center space-x-2 bg-blue-800 hover:bg-blue-900 text-white px-5 py-2.5 rounded-lg transition-colors border border-blue-600">
+          <button className="hidden md:flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-5 py-2.5 rounded-xl transition-all font-bold border border-blue-100">
             <Phone className="h-4 w-4" />
-            <span className="font-semibold text-sm">Call Desk: +237 6XX XXX XXX</span>
+            <span className="text-sm">Call Desk: +237 6XX XXX XXX</span>
           </button>
         </div>
       </header>
 
-      {/* Hero / Search Section - Evokes cleanliness and calm */}
-      <section className="bg-gradient-to-b from-blue-50 to-slate-50 border-b border-slate-200 py-10 md:py-16 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Find Your Medication Fast</h2>
-          <p className="text-slate-600 mb-8 md:text-lg">Search our live inventory and reserve instantly via WhatsApp.</p>
+      {/* Dynamic Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900 pt-16 pb-28 px-4 overflow-hidden">
+        {/* Abstract Background Element for depth */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+          <div className="absolute top-1/2 right-0 w-80 h-80 rounded-full bg-emerald-400 blur-3xl"></div>
+        </div>
 
-          <div className="relative max-w-2xl mx-auto group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-blue-400 group-focus-within:text-blue-600 transition-colors" />
-            </div>
-            <input
-              type="text"
-              className="block w-full pl-12 pr-4 py-4 border-2 border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-lg shadow-sm"
-              placeholder="Search for Paracetamol, Amoxicillin..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        <div className="relative max-w-3xl mx-auto text-center z-10">
+          <span className="inline-block py-1 px-3 rounded-full bg-blue-900/50 border border-blue-400/30 text-blue-200 text-sm font-semibold mb-6 backdrop-blur-sm">
+            Fast, Reliable Health Care
+          </span>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight drop-shadow-sm">
+            Find Your Medication <span className="text-emerald-400">Instantly.</span>
+          </h2>
+          <p className="text-blue-100 mb-8 md:text-lg max-w-xl mx-auto font-medium">
+            Search our live inventory in Likomba and reserve exactly what you need via WhatsApp before you arrive.
+          </p>
         </div>
       </section>
 
+      {/* Overlapping Search Bar - Pulls the layout together */}
+      <div className="max-w-4xl mx-auto px-4 -mt-10 relative z-20">
+        <div className="bg-white p-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 flex items-center">
+          <div className="pl-4">
+            <Search className="h-6 w-6 text-blue-500" />
+          </div>
+          <input
+            type="text"
+            className="w-full pl-4 pr-4 py-4 md:py-5 rounded-xl text-lg md:text-xl text-slate-800 bg-transparent placeholder-slate-400 focus:outline-none"
+            placeholder="Search for Paracetamol, Amoxicillin..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className="pr-2 hidden md:block">
+            <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-md">
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Inventory Display */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex justify-between items-end mb-6">
-          <h3 className="text-xl font-bold text-slate-800">Current Inventory</h3>
-          <span className="text-sm font-medium text-slate-500">{filteredMeds.length} items found</span>
+      <main className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex justify-between items-end mb-8 border-b border-slate-200 pb-4">
+          <h3 className="text-2xl font-extrabold text-slate-800">Current Inventory</h3>
+          <span className="text-sm font-bold text-slate-400 bg-slate-100 py-1 px-3 rounded-lg">
+            {filteredMeds.length} items found
+          </span>
         </div>
 
-        {/* Grid Layout - 3 columns on desktop, 4 on large screens */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {isLoading ? (
             Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-pulse flex flex-col h-full">
-                <div className="h-4 bg-slate-200 rounded w-1/3 mb-4"></div>
-                <div className="h-6 bg-slate-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-slate-200 rounded w-1/4 mb-6"></div>
-                <div className="mt-auto h-12 bg-slate-100 rounded-lg w-full"></div>
+              <div key={index} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm animate-pulse flex flex-col h-full">
+                <div className="h-5 bg-slate-200 rounded w-1/3 mb-4"></div>
+                <div className="h-7 bg-slate-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-slate-100 rounded w-1/4 mb-8"></div>
+                <div className="mt-auto h-12 bg-slate-100 rounded-xl w-full"></div>
               </div>
             ))
           ) : filteredMeds.length > 0 ? (
             filteredMeds.map((med) => (
-              <div key={med.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getBadgeStyle(med.stock)}`}>
+              <div
+                key={med.id}
+                className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col h-full relative overflow-hidden"
+              >
+                {/* Subtle top border accent */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-100 to-transparent group-hover:via-blue-400 transition-colors duration-300"></div>
+
+                <div className="flex justify-between items-start mb-5">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getBadgeStyle(med.stock)}`}>
                     {med.stock}
                   </span>
-                  <span className="text-lg font-bold text-blue-900">{med.price}</span>
+                  <span className="text-xl font-black text-slate-800">{med.price}</span>
                 </div>
 
-                <h4 className="text-xl font-bold text-slate-800 leading-tight mb-1">{med.name}</h4>
-                <p className="text-sm font-medium text-slate-500 mb-6">{med.category}</p>
+                <h4 className="text-xl font-bold text-slate-900 leading-tight mb-2 group-hover:text-blue-700 transition-colors">
+                  {med.name}
+                </h4>
+                <p className="text-sm font-semibold text-slate-400 mb-8">{med.category}</p>
 
-                <div className="mt-auto pt-4 border-t border-slate-100">
+                <div className="mt-auto">
                   <button
                     onClick={() => handleWhatsAppReserve(med.name)}
                     disabled={med.stock === 'Out of Stock'}
-                    className={`w-full flex items-center justify-center space-x-2 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                    className={`w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl font-bold transition-all duration-200 ${
                       med.stock === 'Out of Stock'
-                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                        : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm hover:shadow active:scale-[0.98]'
+                        ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg active:scale-[0.98]'
                     }`}
                   >
                     <MessageCircle className="h-5 w-5" />
@@ -153,12 +182,12 @@ export default function App() {
               </div>
             ))
           ) : (
-            <div className="col-span-full py-20 text-center bg-white rounded-xl border border-slate-200">
-              <div className="mx-auto w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="h-8 w-8 text-slate-400" />
+            <div className="col-span-full py-24 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+              <div className="mx-auto w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                <Search className="h-10 w-10 text-blue-400" />
               </div>
-              <h3 className="text-lg font-medium text-slate-900 mb-1">No matching medications</h3>
-              <p className="text-slate-500">We couldn't find anything matching "{searchTerm}".</p>
+              <h3 className="text-2xl font-bold text-slate-800 mb-2">No matching medications</h3>
+              <p className="text-slate-500 text-lg">We couldn't find anything matching "{searchTerm}".</p>
             </div>
           )}
         </div>
@@ -166,7 +195,7 @@ export default function App() {
 
       {/* Floating WhatsApp Button - Mobile Only */}
       <button
-        className="md:hidden fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+        className="md:hidden fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
         onClick={() => window.open('https://wa.me/237XXXXXXXXX', '_blank')}
         aria-label="Contact pharmacy on WhatsApp"
       >
