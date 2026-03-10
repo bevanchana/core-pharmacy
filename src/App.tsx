@@ -13,6 +13,7 @@ const mockDatabase = [
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [medications, setMedications] = useState<typeof mockDatabase>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,9 +26,14 @@ export default function App() {
     return () => clearTimeout(fetchMeds);
   }, []);
 
-  const filteredMeds = medications.filter((med) =>
-    med.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMeds = medications.filter((med) => {
+    const matchesSearch = med.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "All" || med.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Get unique categories for filter buttons
+  const categories = ["All", ...Array.from(new Set(medications.map(med => med.category)))];
 
   const getBadgeStyle = (stockStatus: string) => {
     switch (stockStatus) {
@@ -123,6 +129,23 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* Category Filter Buttons */}
+        <div className="mt-6 flex flex-wrap gap-2 justify-center">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                selectedCategory === category
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main Inventory Display */}
@@ -148,36 +171,54 @@ export default function App() {
             filteredMeds.map((med) => (
               <div
                 key={med.id}
-                className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col h-full relative overflow-hidden"
+                className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative overflow-hidden"
               >
                 {/* Subtle top border accent */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-100 to-transparent group-hover:via-blue-400 transition-colors duration-300"></div>
 
-                <div className="flex justify-between items-start mb-5">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getBadgeStyle(med.stock)}`}>
-                    {med.stock}
-                  </span>
-                  <span className="text-xl font-black text-slate-800">{med.price}</span>
+                {/* Medication Image Area */}
+                <div className="relative h-48 bg-gradient-to-br from-slate-50 to-slate-100 rounded-t-2xl flex items-center justify-center overflow-hidden">
+                  {/* Placeholder for actual medication image */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 bg-white/80 rounded-2xl shadow-lg flex items-center justify-center backdrop-blur-sm">
+                      <Activity className="h-16 w-16 text-slate-300" />
+                    </div>
+                  </div>
+                  {/* Stock badge overlay */}
+                  <div className="absolute top-3 left-3">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-sm ${getBadgeStyle(med.stock)}`}>
+                      {med.stock}
+                    </span>
+                  </div>
+                  {/* Price badge overlay */}
+                  <div className="absolute top-3 right-3">
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-black bg-white/90 text-slate-800 backdrop-blur-sm shadow-md">
+                      {med.price}
+                    </span>
+                  </div>
                 </div>
 
-                <h4 className="text-xl font-bold text-slate-900 leading-tight mb-2 group-hover:text-blue-700 transition-colors">
-                  {med.name}
-                </h4>
-                <p className="text-sm font-semibold text-slate-400 mb-8">{med.category}</p>
+                {/* Card Content */}
+                <div className="p-6 flex flex-col flex-grow">
+                  <h4 className="text-xl font-bold text-slate-900 leading-tight mb-2 group-hover:text-blue-700 transition-colors">
+                    {med.name}
+                  </h4>
+                  <p className="text-sm font-semibold text-slate-400 mb-6">{med.category}</p>
 
-                <div className="mt-auto">
-                  <button
-                    onClick={() => handleWhatsAppReserve(med.name)}
-                    disabled={med.stock === 'Out of Stock'}
-                    className={`w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl font-bold transition-all duration-200 ${
-                      med.stock === 'Out of Stock'
-                        ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg active:scale-[0.98]'
-                    }`}
-                  >
-                    <MessageCircle className="h-5 w-5" />
-                    <span>{med.stock === 'Out of Stock' ? 'Currently Unavailable' : 'Reserve via WhatsApp'}</span>
-                  </button>
+                  <div className="mt-auto">
+                    <button
+                      onClick={() => handleWhatsAppReserve(med.name)}
+                      disabled={med.stock === 'Out of Stock'}
+                      className={`w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl font-bold transition-all duration-200 ${
+                        med.stock === 'Out of Stock'
+                          ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg active:scale-[0.98]'
+                      }`}
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      <span>{med.stock === 'Out of Stock' ? 'Currently Unavailable' : 'Reserve via WhatsApp'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
