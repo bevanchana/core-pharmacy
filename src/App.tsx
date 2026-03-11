@@ -1,247 +1,282 @@
-import { useState, useEffect } from 'react';
-import { Search, MapPin, Phone, MessageCircle, ShieldCheck, Clock, Activity } from 'lucide-react';
-import './App.css'
+import { useState, useEffect, useMemo } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { Header } from './components/Header';
+import { SearchBar } from './components/SearchBar';
+import { MedicationCard } from './components/MedicationCard';
+import { SkeletonLoader } from './components/SkeletonLoader';
+import { FloatingWhatsAppButton } from './components/FloatingWhatsAppButton';
+import { Admin } from './pages/Admin';
+import { MOCK_MEDICATIONS, WHATSAPP_NUMBER, Medication } from './constants';
+import { SearchX, Sparkles, ShieldCheck, MapPin, Activity } from 'lucide-react';
+import { cn } from './lib/utils';
 
-const mockDatabase = [
-  { id: 1, name: "Paracetamol 500mg", category: "Pain Relief", stock: "In Stock", price: "500 FCFA" },
-  { id: 2, name: "Artemether-Lumefantrine", category: "Antimalarial", stock: "Low Stock", price: "1,500 FCFA" },
-  { id: 3, name: "Amoxicillin 250mg", category: "Antibiotic", stock: "In Stock", price: "1,200 FCFA" },
-  { id: 4, name: "Vitamin C Supplements", category: "Wellness & Vitamins", stock: "Out of Stock", price: "1,000 FCFA" },
-  { id: 5, name: "Ibuprofen 400mg", category: "Pain Relief", stock: "In Stock", price: "800 FCFA" },
-  { id: 6, name: "Cough Syrup (Adult)", category: "Cold & Flu", stock: "Low Stock", price: "2,000 FCFA" },
-];
+const CATEGORIES = ["All", "Pain Relief", "Antibiotic", "Antimalarial", "Vitamins", "Allergy", "Respiratory", "Diabetes", "Digestive Health"];
 
-export default function App() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [medications, setMedications] = useState<typeof mockDatabase>([]);
-  const [isLoading, setIsLoading] = useState(true);
+function Storefront({ medications, isLoading }: { medications: Medication[], isLoading: boolean }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedLocation, setSelectedLocation] = useState('All');
 
-  useEffect(() => {
-    const fetchMeds = setTimeout(() => {
-      setMedications(mockDatabase);
-      setIsLoading(false);
-    }, 1200);
+  const locations = useMemo(() => {
+    const locs = Array.from(new Set(medications.map(m => m.location)));
+    return ["All", ...locs.sort()];
+  }, [medications]);
 
-    return () => clearTimeout(fetchMeds);
-  }, []);
+  const filteredMeds = useMemo(() => {
+    return medications.filter(med => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = med.tradeName.toLowerCase().includes(searchLower) ||
+                          med.genericName.toLowerCase().includes(searchLower) ||
+                          med.category.toLowerCase().includes(searchLower);
+      const matchesCategory = selectedCategory === 'All' || med.category === selectedCategory;
+      const matchesLocation = selectedLocation === 'All' || med.location === selectedLocation;
+      return matchesSearch && matchesCategory && matchesLocation;
+    });
+  }, [medications, searchTerm, selectedCategory, selectedLocation]);
 
-  const filteredMeds = medications.filter((med) => {
-    const matchesSearch = med.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || med.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Get unique categories for filter buttons
-  const categories = ["All", ...Array.from(new Set(medications.map(med => med.category)))];
-
-  const getBadgeStyle = (stockStatus: string) => {
-    switch (stockStatus) {
-      case 'In Stock': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'Low Stock': return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'Out of Stock': return 'bg-rose-100 text-rose-800 border-rose-200';
-      default: return 'bg-slate-100 text-slate-800 border-slate-200';
-    }
-  };
-
-  const handleWhatsAppReserve = (medName: string) => {
-    const phone = "237XXXXXXXXX";
-    const message = encodeURIComponent(`Hello Core Pharmacy, I would like to check the availability of ${medName}.`);
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  const handleReserve = (medicationName: string) => {
+    const message = encodeURIComponent(`Hello Core Pharmacy, I would like to reserve: ${medicationName}. Is it available?`);
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] font-sans text-slate-800 selection:bg-emerald-200 selection:text-emerald-900">
-      {/* Top Utility Bar */}
-      <div className="bg-white border-b border-slate-100 text-slate-500 text-xs md:text-sm py-2 px-4 hidden md:block">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center">
-              <MapPin className="h-4 w-4 mr-1 text-blue-500" /> Likomba, South-West | Near PCC & Redeemed House
-            </span>
-            <span className="flex items-center">
-              <Clock className="h-4 w-4 mr-1 text-blue-500" /> Open Mon-Sat: 8AM - 8PM
-            </span>
-          </div>
-          <div className="flex items-center font-medium">
-            <ShieldCheck className="h-4 w-4 mr-1 text-emerald-500" /> Licensed & Verified Pharmacy
-          </div>
-        </div>
-      </div>
-
-      {/* Main Navigation with soft shadow */}
-      <header className="bg-white sticky top-0 z-50 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)]">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-2.5 rounded-xl shadow-md">
-              <Activity className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Core Pharmacy</h1>
-              <p className="text-slate-500 text-xs md:hidden mt-0.5">📍 Likomba | Near PCC</p>
-            </div>
-          </div>
-
-          <button className="hidden md:flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-5 py-2.5 rounded-xl transition-all font-bold border border-blue-100">
-            <Phone className="h-4 w-4" />
-            <span className="text-sm">Call Desk: +237 6XX XXX XXX</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Dynamic Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-800 via-blue-700 to-blue-900 pt-16 pb-28 px-4 overflow-hidden">
-        {/* Abstract Background Element for depth */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
-          <div className="absolute top-1/2 right-0 w-80 h-80 rounded-full bg-emerald-400 blur-3xl"></div>
-        </div>
-
-        <div className="relative max-w-3xl mx-auto text-center z-10">
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-900/50 border border-blue-400/30 text-blue-200 text-sm font-semibold mb-6 backdrop-blur-sm">
-            Fast, Reliable Health Care
-          </span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight drop-shadow-sm">
-            Find Your Medication <span className="text-emerald-400">Instantly.</span>
-          </h2>
-          <p className="text-blue-100 mb-8 md:text-lg max-w-xl mx-auto font-medium">
-            Search our live inventory in Likomba and reserve exactly what you need via WhatsApp before you arrive.
-          </p>
-        </div>
-      </section>
-
-      {/* Overlapping Search Bar - Pulls the layout together */}
-      <div className="max-w-4xl mx-auto px-4 -mt-10 relative z-20">
-        <div className="bg-white p-2 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 flex items-center">
-          <div className="pl-4">
-            <Search className="h-6 w-6 text-blue-500" />
-          </div>
-          <input
-            type="text"
-            className="w-full pl-4 pr-4 py-4 md:py-5 rounded-xl text-lg md:text-xl text-slate-800 bg-transparent placeholder-slate-400 focus:outline-none"
-            placeholder="Search for Paracetamol, Amoxicillin..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="pr-2 hidden md:block">
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-md">
-              Search
-            </button>
-          </div>
-        </div>
-
-        {/* Category Filter Buttons */}
-        <div className="mt-6 flex flex-wrap gap-2 justify-center">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                selectedCategory === category
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Inventory Display */}
-      <main className="max-w-7xl mx-auto px-4 py-16">
-        <div className="flex justify-between items-end mb-8 border-b border-slate-200 pb-4">
-          <h3 className="text-2xl font-extrabold text-slate-800">Current Inventory</h3>
-          <span className="text-sm font-bold text-slate-400 bg-slate-100 py-1 px-3 rounded-lg">
-            {filteredMeds.length} items found
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {isLoading ? (
-            Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm animate-pulse flex flex-col h-full">
-                <div className="h-5 bg-slate-200 rounded w-1/3 mb-4"></div>
-                <div className="h-7 bg-slate-200 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-slate-100 rounded w-1/4 mb-8"></div>
-                <div className="mt-auto h-12 bg-slate-100 rounded-xl w-full"></div>
-              </div>
-            ))
-          ) : filteredMeds.length > 0 ? (
-            filteredMeds.map((med) => (
-              <div
-                key={med.id}
-                className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+    <div className="min-h-screen mesh-gradient font-sans text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
+      <Header />
+      
+      <main className="relative">
+        <section className="relative pt-20 pb-32 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                {/* Subtle top border accent */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-100 to-transparent group-hover:via-blue-400 transition-colors duration-300"></div>
-
-                {/* Medication Image Area */}
-                <div className="relative h-48 bg-gradient-to-br from-slate-50 to-slate-100 rounded-t-2xl flex items-center justify-center overflow-hidden">
-                  {/* Placeholder for actual medication image */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 bg-white/80 rounded-2xl shadow-lg flex items-center justify-center backdrop-blur-sm">
-                      <Activity className="h-16 w-16 text-slate-300" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-emerald-100">
+                  <Sparkles size={14} />
+                  National Pharmacy Network
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black tracking-tight text-slate-900 mb-8 leading-[1.1]">
+                  Find Medicines <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">In Your Town.</span>
+                </h2>
+                <p className="text-xl text-slate-500 font-medium leading-relaxed mb-10 max-w-lg">
+                  Search by trade or generic name, check strength and dosage, and find the nearest pharmacy with stock.
+                </p>
+                
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-slate-200/50">
+                      <ShieldCheck className="text-emerald-500" size={20} />
                     </div>
+                    <span className="text-sm font-bold text-slate-700">Verified Stock</span>
                   </div>
-                  {/* Stock badge overlay */}
-                  <div className="absolute top-3 left-3">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-sm ${getBadgeStyle(med.stock)}`}>
-                      {med.stock}
-                    </span>
-                  </div>
-                  {/* Price badge overlay */}
-                  <div className="absolute top-3 right-3">
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-black bg-white/90 text-slate-800 backdrop-blur-sm shadow-md">
-                      {med.price}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-slate-200/50">
+                      <MapPin className="text-blue-500" size={20} />
+                    </div>
+                    <span className="text-sm font-bold text-slate-700">Nationwide Coverage</span>
                   </div>
                 </div>
+              </motion.div>
 
-                {/* Card Content */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <h4 className="text-xl font-bold text-slate-900 leading-tight mb-2 group-hover:text-blue-700 transition-colors">
-                    {med.name}
-                  </h4>
-                  <p className="text-sm font-semibold text-slate-400 mb-6">{med.category}</p>
-
-                  <div className="mt-auto">
-                    <button
-                      onClick={() => handleWhatsAppReserve(med.name)}
-                      disabled={med.stock === 'Out of Stock'}
-                      className={`w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl font-bold transition-all duration-200 ${
-                        med.stock === 'Out of Stock'
-                          ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md hover:shadow-lg active:scale-[0.98]'
-                      }`}
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                      <span>{med.stock === 'Out of Stock' ? 'Currently Unavailable' : 'Reserve via WhatsApp'}</span>
-                    </button>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="hidden lg:block relative"
+              >
+                <div className="relative z-10 bg-white/40 backdrop-blur-2xl rounded-[3rem] p-8 border border-white/50 shadow-2xl">
+                  <img 
+                    src="https://picsum.photos/seed/pharmacy-inventory/800/600" 
+                    alt="Pharmacy Inventory" 
+                    className="rounded-[2rem] shadow-2xl object-cover w-full h-[400px]"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-3xl shadow-2xl border border-slate-50 max-w-[200px]">
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Network Status</p>
+                    <p className="text-sm font-extrabold text-slate-900">Connected to 50+ pharmacies across Cameroon</p>
                   </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full py-24 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
-              <div className="mx-auto w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                <Search className="h-10 w-10 text-blue-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-2">No matching medications</h3>
-              <p className="text-slate-500 text-lg">We couldn't find anything matching "{searchTerm}".</p>
+                <div className="absolute -top-20 -left-20 w-64 h-64 bg-emerald-400/20 rounded-full blur-[100px] -z-10"></div>
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-400/20 rounded-full blur-[100px] -z-10"></div>
+              </motion.div>
             </div>
-          )}
-        </div>
+          </div>
+        </section>
+
+        <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pb-32">
+          <div className="space-y-6 mb-12">
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-1">Select Town</p>
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
+                {locations.map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => setSelectedLocation(loc)}
+                    className={cn(
+                      "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2",
+                      selectedLocation === loc 
+                        ? "bg-blue-600 text-white shadow-xl shadow-blue-600/20" 
+                        : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-100"
+                    )}
+                  >
+                    <MapPin size={14} />
+                    {loc}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-1">Categories</p>
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={cn(
+                      "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                      selectedCategory === cat 
+                        ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20" 
+                        : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-100"
+                    )}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mb-10">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+              {isLoading ? 'Syncing Inventory...' : `${filteredMeds.length} Products Found`}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <motion.div
+                    key={`skeleton-${i}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <SkeletonLoader />
+                  </motion.div>
+                ))
+              ) : filteredMeds.length > 0 ? (
+                filteredMeds.map((med) => (
+                  <motion.div
+                    key={med.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <MedicationCard 
+                      medication={med} 
+                      onReserve={handleReserve} 
+                    />
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full py-32 flex flex-col items-center justify-center text-center"
+                >
+                  <div className="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center mb-6">
+                    <SearchX className="text-slate-300" size={48} />
+                  </div>
+                  <h4 className="text-2xl font-black text-slate-900 mb-3">No results found</h4>
+                  <p className="text-slate-500 max-w-sm mx-auto font-medium">
+                    We couldn't find any medications matching your criteria in {selectedLocation === 'All' ? 'any town' : selectedLocation}.
+                  </p>
+                  <button 
+                    onClick={() => { setSearchTerm(''); setSelectedCategory('All'); setSelectedLocation('All'); }}
+                    className="mt-8 px-8 py-4 bg-emerald-50 text-emerald-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-100 transition-all"
+                  >
+                    Reset All Filters
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </section>
       </main>
 
-      {/* Floating WhatsApp Button - Mobile Only */}
-      <button
-        className="md:hidden fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
-        onClick={() => window.open('https://wa.me/237XXXXXXXXX', '_blank')}
-        aria-label="Contact pharmacy on WhatsApp"
-      >
-        <MessageCircle className="h-7 w-7" />
-      </button>
+      <FloatingWhatsAppButton phoneNumber={WHATSAPP_NUMBER} />
+      
+      <footer className="bg-slate-900 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-12 mb-16">
+            <div className="col-span-2">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+                  <Activity className="text-white" size={20} />
+                </div>
+                <span className="text-2xl font-black tracking-tight">Core<span className="text-emerald-500">Pharmacy</span></span>
+              </div>
+              <p className="text-slate-400 font-medium max-w-sm leading-relaxed">
+                Connecting patients to pharmacies across the nation. Find what you need, where you are.
+              </p>
+            </div>
+            <div>
+              <h5 className="text-xs font-black uppercase tracking-widest text-emerald-500 mb-6">Quick Links</h5>
+              <ul className="space-y-4 text-sm font-bold text-slate-300">
+                <li><a href="#" className="hover:text-white transition-colors">Browse Catalog</a></li>
+                <li><Link to="/admin" className="hover:text-white transition-colors">Pharmacy Login</Link></li>
+                <li><Link to="/admin" className="hover:text-white transition-colors">Register Pharmacy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="text-xs font-black uppercase tracking-widest text-emerald-500 mb-6">Legal</h5>
+              <ul className="space-y-4 text-sm font-bold text-slate-300">
+                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Health Regulations</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-12 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">© {new Date().getFullYear()} Core Pharmacy Network. National Health Initiative.</p>
+          </div>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+export default function App() {
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMedications(MOCK_MEDICATIONS);
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleUploadSuccess = (newData: Medication[]) => {
+    setMedications(prev => [...newData, ...prev]);
+  };
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Storefront medications={medications} isLoading={isLoading} />} />
+        <Route path="/admin" element={<Admin medications={medications} onUploadSuccess={handleUploadSuccess} />} />
+      </Routes>
+    </Router>
   );
 }

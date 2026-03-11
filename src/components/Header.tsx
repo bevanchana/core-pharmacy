@@ -1,45 +1,44 @@
-import { HeartPulse, MapPin } from 'lucide-react';
-import { PHARMACY_CONFIG } from '../config';
+import React from 'react';
+import { MapPin, Phone, Activity } from 'lucide-react';
 
-export function Header() {
+export const Header: React.FC = () => {
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
-      {/* Branding Row */}
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-4 md:px-6">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-xl shadow-lg shadow-blue-500/30">
-            <HeartPulse className="h-6 w-6 text-white" aria-hidden="true" />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {PHARMACY_CONFIG.name}
-            </h1>
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
-              <MapPin className="h-3 w-3" aria-hidden="true" />
-              <span className="font-medium">Likomba, South-West</span>
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 rotate-3">
+              <Activity className="text-white" size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 leading-tight tracking-tight">Core<span className="text-emerald-600">Pharmacy</span></h1>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Live Inventory</p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Contact Desk Button - Desktop Only */}
-        <button
-          className="hidden md:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5"
-          aria-label="Contact desk"
-        >
-          <HeartPulse className="h-4 w-4" />
-          <span>Contact Desk</span>
-        </button>
-      </div>
-
-      {/* Location Bar */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-100/50 px-4 py-2.5 md:px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm text-blue-900">
-          <MapPin className="h-4 w-4 text-blue-600" aria-hidden="true" />
-          <p className="font-medium">
-            {PHARMACY_CONFIG.location}
-          </p>
+          
+          <div className="hidden md:flex items-center gap-8">
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-2 text-slate-600">
+                <MapPin size={14} className="text-emerald-500" />
+                <span className="text-xs font-bold text-slate-900">Main Street, Douala</span>
+              </div>
+              <p className="text-[10px] text-slate-400 font-medium">Open 24/7 • Fast Delivery</p>
+            </div>
+            <a 
+              href={`https://wa.me/${237600000000}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-sm font-bold hover:bg-emerald-600 transition-all duration-300 shadow-xl shadow-slate-900/10 hover:shadow-emerald-500/20 active:scale-95"
+            >
+              <Phone size={16} className="group-hover:rotate-12 transition-transform" />
+              Contact Us
+            </a>
+          </div>
         </div>
       </div>
     </header>
   );
-}
+};

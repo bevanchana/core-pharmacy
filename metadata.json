@@ -1,0 +1,5 @@
+{
+  "name": "Core Pharmacy",
+  "description": "Digital storefront for browsing medications and reserving via WhatsApp.",
+  "requestFramePermissions": []
+}
